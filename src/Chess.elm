@@ -11,8 +11,8 @@ module Chess
 import Animation
 import Animation.Messenger as AM
 import Chess.Data.Board exposing (Board, Square(..))
-import Chess.Data.Piece exposing (Piece)
-import Chess.Data.Player exposing (Player)
+import Chess.Data.Piece exposing (Piece(..))
+import Chess.Data.Player exposing (Player(..))
 import Chess.View.Asset
 import Chess.View.Board
 import Html exposing (Attribute, Html)
@@ -47,6 +47,14 @@ type alias DragState a =
     , position : Mouse.Position
     , original : AM.State (DragMsg a)
     , cursor : AM.State (DragMsg a)
+    }
+
+
+type alias Move =
+    { from : Chess.View.Board.Position
+    , to : Chess.View.Board.Position
+    , player : Player
+    , piece : Piece
     }
 
 
@@ -104,8 +112,103 @@ update msg (State state) =
                     ( State state, Cmd.none )
 
                 Just to ->
-                    -- TODO
-                    ( State state, Cmd.none )
+                    ( makeMove to (State state), Cmd.none )
+
+
+makeMove : Chess.View.Board.Position -> State -> State
+makeMove to (State state) =
+    case state.drag.subject of
+        Nothing ->
+            State state
+
+        Just sub ->
+            let
+                move =
+                    Move
+                        sub.position
+                        to
+                        sub.player
+                        sub.piece
+
+                updatedBoard =
+                    makeMoveOnBoard move state.board
+            in
+            State { state | board = updatedBoard }
+
+
+makeMoveOnBoard : Move -> Board -> Board
+makeMoveOnBoard move board =
+    board
+        |> removePieceFromBoard move
+        |> addPieceToBoard move
+
+
+removePieceFromBoard : Move -> Board -> Board
+removePieceFromBoard { from } board =
+    List.indexedMap
+        (\x row ->
+            List.indexedMap
+                (\y square ->
+                    if toRow x == from.row && toColumn y == from.column then
+                        Empty
+                    else
+                        square
+                )
+                row
+        )
+        board
+
+
+addPieceToBoard : Move -> Board -> Board
+addPieceToBoard { to, player, piece } board =
+    List.indexedMap
+        (\x row ->
+            List.indexedMap
+                (\y square ->
+                    if toRow x == to.row && toColumn y == to.column then
+                        Occupied player piece
+                    else
+                        square
+                )
+                row
+        )
+        board
+
+
+toRow : Int -> Int
+toRow row =
+    row + 1
+
+
+toColumn : Int -> Char
+toColumn column =
+    case column + 1 of
+        1 ->
+            'a'
+
+        2 ->
+            'b'
+
+        3 ->
+            'c'
+
+        4 ->
+            'd'
+
+        5 ->
+            'e'
+
+        6 ->
+            'f'
+
+        7 ->
+            'g'
+
+        8 ->
+            'h'
+
+        _ ->
+            Debug.crash "Column parsing failure"
 
 
 type alias DragConfig a msg =

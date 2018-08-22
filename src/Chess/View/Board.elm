@@ -45,7 +45,7 @@ viewArea : (Position -> a -> Html msg) -> Int -> Int -> a -> Html msg
 viewArea toArea row column entry =
     let
         position =
-            { row = 8 - row
+            { row = row + 1
             , column = Char.fromCode (column + 97)
             }
     in
