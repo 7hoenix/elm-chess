@@ -1,12 +1,22 @@
-module Chess
-    exposing
-        ( Msg
-        , State
-        , fromFen
-        , subscriptions
-        , update
-        , view
-        )
+module Chess exposing
+    ( Msg
+    , State
+    , fromFen
+    , subscriptions
+    , update
+    , view
+    )
+
+{-|
+
+@docs Msg
+@docs State
+@docs fromFen
+@docs subscriptions
+@docs update
+@docs view
+
+-}
 
 import Animation
 import Animation.Messenger as AM
@@ -24,9 +34,11 @@ import Mouse
 import Task
 
 
+
 ---- MODEL ----
 
 
+{-| -}
 type State
     = State
         { board : Board
@@ -58,6 +70,7 @@ type alias Move =
     }
 
 
+{-| -}
 fromFen : String -> Maybe State
 fromFen fen =
     case D.decodeValue Chess.Data.Board.board (E.string fen) of
@@ -82,6 +95,7 @@ fromFen fen =
 --- UPDATE ----
 
 
+{-| -}
 type Msg
     = SetHover Chess.View.Board.Position
     | DragMsg (DragMsg DraggableItem)
@@ -96,6 +110,7 @@ type DragMsg a
     | Animate Animation.Msg
 
 
+{-| -}
 update : Msg -> State -> ( State, Cmd Msg )
 update msg (State state) =
     case msg of
@@ -151,6 +166,7 @@ removePieceFromBoard { from } board =
                 (\y square ->
                     if toRow x == from.row && toColumn y == from.column then
                         Empty
+
                     else
                         square
                 )
@@ -167,6 +183,7 @@ addPieceToBoard { to, player, piece } board =
                 (\y square ->
                     if toRow x == to.row && toColumn y == to.column then
                         Occupied player piece
+
                     else
                         square
                 )
@@ -277,6 +294,7 @@ gone =
     [ Animation.opacity 0.0 ]
 
 
+{-| -}
 subscriptions : State -> Sub Msg
 subscriptions (State { board, drag }) =
     Sub.map DragMsg <|
@@ -285,6 +303,7 @@ subscriptions (State { board, drag }) =
             , Animation.subscription Animate [ drag.original, drag.cursor ]
             , if drag.subject == Nothing then
                 Sub.none
+
               else
                 Mouse.moves MouseMove
             ]
@@ -294,10 +313,12 @@ subscriptions (State { board, drag }) =
 ---- VIEW ----
 
 
+{-| -}
 type alias ViewConfig =
     { each : String, between : String }
 
 
+{-| -}
 view : ViewConfig -> State -> Html Msg
 view config (State { board, drag }) =
     Html.span []
@@ -361,6 +382,7 @@ animateDrag : Chess.View.Board.Position -> DragState DraggableItem -> List (Attr
 animateDrag position drag =
     if Maybe.map .position drag.subject == Just position then
         Animation.render drag.original
+
     else
         []
 

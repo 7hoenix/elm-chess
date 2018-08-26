@@ -8,6 +8,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 
 
+
 -- GRID
 
 
@@ -17,6 +18,7 @@ type alias Position =
     }
 
 
+{-| -}
 grid : { each : String, between : String } -> (Position -> a -> Html msg) -> List (List a) -> Html msg
 grid areaSize toArea entries =
     let
@@ -93,6 +95,7 @@ tileBackground : Position -> String
 tileBackground position =
     if position.row % 2 == Char.toCode position.column % 2 then
         palette.purple
+
     else
         palette.gray
 
