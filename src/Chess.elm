@@ -19,14 +19,14 @@ module Chess exposing
 -}
 
 import Animation
-import Animation.Messenger as AM
 import Chess.Data.Board exposing (Board, Square(..))
 import Chess.Data.Piece exposing (Piece(..))
 import Chess.Data.Player exposing (Player(..))
 import Chess.View.Asset
 import Chess.View.Board
+import Drag
 import Html exposing (Attribute, Html)
-import Html.Attributes exposing (draggable)
+import Html.Attributes
 import Html.Events exposing (..)
 import Json.Decode as D
 import Json.Encode as E
@@ -42,7 +42,7 @@ import Task
 type State
     = State
         { board : Board
-        , drag : DragState DraggableItem
+        , drag : Drag.State DraggableItem
         , hover : Maybe Chess.View.Board.Position
         }
 
@@ -51,14 +51,6 @@ type alias DraggableItem =
     { position : Chess.View.Board.Position
     , player : Player
     , piece : Piece
-    }
-
-
-type alias DragState a =
-    { subject : Maybe a
-    , position : Mouse.Position
-    , original : AM.State (DragMsg a)
-    , cursor : AM.State (DragMsg a)
     }
 
 
@@ -98,16 +90,8 @@ fromFen fen =
 {-| -}
 type Msg
     = SetHover Chess.View.Board.Position
-    | DragMsg (DragMsg DraggableItem)
+    | DragMsg (Drag.Msg DraggableItem)
     | FinalRelease DraggableItem
-
-
-type DragMsg a
-    = Start a Mouse.Position
-    | Stop
-    | Reset
-    | MouseMove Mouse.Position
-    | Animate Animation.Msg
 
 
 {-| -}
@@ -118,7 +102,7 @@ update msg (State state) =
             ( State { state | hover = Just position }, Cmd.none )
 
         DragMsg dragMsg ->
-            updateDrag dragConfig dragMsg state.drag
+            Drag.update dragConfig dragMsg state.drag
                 |> Tuple.mapFirst (\drag -> State { state | drag = drag })
 
         FinalRelease from ->
@@ -128,6 +112,19 @@ update msg (State state) =
 
                 Just to ->
                     ( makeMove to (State state), Cmd.none )
+
+
+dragConfig : Drag.Config DraggableItem Msg
+dragConfig =
+    { toMsg = DragMsg
+    , finalRelease = FinalRelease
+
+    -- ANIMATION
+    , onCursorStartDrag = [ Animation.to present ]
+    , onCursorStopDrag = [ Animation.to gone ]
+    , onOriginalStartDrag = [ Animation.to gone ]
+    , onOriginalStopDrag = [ Animation.to present ]
+    }
 
 
 makeMove : Chess.View.Board.Position -> State -> State
@@ -228,62 +225,6 @@ toColumn column =
             Debug.crash "Column parsing failure"
 
 
-type alias DragConfig a msg =
-    { toMsg : DragMsg a -> msg
-    , finalRelease : a -> msg
-    }
-
-
-dragConfig : DragConfig DraggableItem Msg
-dragConfig =
-    { toMsg = DragMsg
-    , finalRelease = FinalRelease
-    }
-
-
-updateDrag : DragConfig a msg -> DragMsg a -> DragState a -> ( DragState a, Cmd msg )
-updateDrag config msg state =
-    case msg of
-        Start subject position ->
-            ( { state
-                | subject = Just subject
-                , position = position
-                , cursor = Animation.interrupt [ Animation.to present ] state.cursor
-                , original = Animation.interrupt [ Animation.to gone ] state.original
-              }
-            , Cmd.none
-            )
-
-        Stop ->
-            ( { state
-                | cursor = Animation.interrupt [ Animation.to gone ] state.cursor
-                , original = Animation.interrupt [ Animation.to present, AM.send Reset ] state.original
-              }
-            , Maybe.map
-                (Task.succeed >> Task.perform config.finalRelease)
-                state.subject
-                |> Maybe.withDefault Cmd.none
-            )
-
-        Reset ->
-            ( { state | subject = Nothing }, Cmd.none )
-
-        MouseMove position ->
-            ( { state | position = position }, Cmd.none )
-
-        Animate tick ->
-            let
-                ( cursor, a ) =
-                    AM.update tick state.cursor
-
-                ( original, b ) =
-                    AM.update tick state.original
-            in
-            ( { state | original = original, cursor = cursor }
-            , Cmd.map config.toMsg <| Cmd.batch [ a, b ]
-            )
-
-
 present : List Animation.Property
 present =
     [ Animation.opacity 1.0 ]
@@ -297,16 +238,7 @@ gone =
 {-| -}
 subscriptions : State -> Sub Msg
 subscriptions (State { board, drag }) =
-    Sub.map DragMsg <|
-        Sub.batch
-            [ Mouse.ups (\_ -> Stop)
-            , Animation.subscription Animate [ drag.original, drag.cursor ]
-            , if drag.subject == Nothing then
-                Sub.none
-
-              else
-                Mouse.moves MouseMove
-            ]
+    Drag.subscriptions dragConfig drag
 
 
 
@@ -327,7 +259,7 @@ view config (State { board, drag }) =
         ]
 
 
-viewGhostImage : ViewConfig -> DragState DraggableItem -> Html Msg
+viewGhostImage : ViewConfig -> Drag.State DraggableItem -> Html Msg
 viewGhostImage config drag =
     case drag.subject of
         Nothing ->
@@ -356,7 +288,7 @@ followCursor { x, y } =
         ]
 
 
-viewCell : DragState DraggableItem -> Chess.View.Board.Position -> Chess.Data.Board.Square -> Html Msg
+viewCell : Drag.State DraggableItem -> Chess.View.Board.Position -> Chess.Data.Board.Square -> Html Msg
 viewCell drag position square =
     case square of
         Empty ->
@@ -368,30 +300,18 @@ viewCell drag position square =
         Occupied player piece ->
             Chess.View.Board.square position
                 square
-                [ draggable "true"
-                , onDragStart <|
-                    DragMsg
-                        << Start (DraggableItem position player piece)
-                , onMouseEnter (SetHover position)
-                , Html.Attributes.style [ ( "cursor", "grab" ) ]
-                ]
+                (onMouseEnter (SetHover position)
+                    :: Html.Attributes.style [ ( "cursor", "grab" ) ]
+                    :: Drag.draggableAttributes dragConfig
+                        (DraggableItem position player piece)
+                )
                 (animateDrag position drag)
 
 
-animateDrag : Chess.View.Board.Position -> DragState DraggableItem -> List (Attribute Msg)
+animateDrag : Chess.View.Board.Position -> Drag.State DraggableItem -> List (Attribute Msg)
 animateDrag position drag =
     if Maybe.map .position drag.subject == Just position then
         Animation.render drag.original
 
     else
         []
-
-
-onDragStart : (Mouse.Position -> msg) -> Attribute msg
-onDragStart toMsg =
-    onWithOptions "dragstart"
-        { preventDefault = True, stopPropagation = True }
-        (D.map2 (\x y -> toMsg (Mouse.Position x y))
-            (D.field "clientX" D.int)
-            (D.field "clientY" D.int)
-        )
