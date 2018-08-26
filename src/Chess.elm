@@ -22,6 +22,7 @@ import Animation
 import Chess.Data.Board exposing (Board, Square(..))
 import Chess.Data.Piece exposing (Piece(..))
 import Chess.Data.Player exposing (Player(..))
+import Chess.Data.Position exposing (Position)
 import Chess.View.Asset
 import Chess.View.Board
 import Drag
@@ -43,20 +44,20 @@ type State
     = State
         { board : Board
         , drag : Drag.State DraggableItem
-        , hover : Maybe Chess.View.Board.Position
+        , hover : Maybe Position
         }
 
 
 type alias DraggableItem =
-    { position : Chess.View.Board.Position
+    { position : Position
     , player : Player
     , piece : Piece
     }
 
 
 type alias Move =
-    { from : Chess.View.Board.Position
-    , to : Chess.View.Board.Position
+    { from : Position
+    , to : Position
     , player : Player
     , piece : Piece
     }
@@ -89,14 +90,20 @@ fromFen fen =
 
 {-| -}
 type Msg
-    = SetHover Chess.View.Board.Position
+    = SetHover Position
     | DragMsg (Drag.Msg DraggableItem)
     | FinalRelease DraggableItem
 
 
+type alias Config msg =
+    { toMsg : Msg -> msg
+    , onFenChanged : String -> msg
+    }
+
+
 {-| -}
-update : Msg -> State -> ( State, Cmd Msg )
-update msg (State state) =
+update : Config msg -> Msg -> State -> ( State, Cmd msg )
+update config msg (State state) =
     case msg of
         SetHover position ->
             ( State { state | hover = Just position }, Cmd.none )
@@ -104,6 +111,7 @@ update msg (State state) =
         DragMsg dragMsg ->
             Drag.update dragConfig dragMsg state.drag
                 |> Tuple.mapFirst (\drag -> State { state | drag = drag })
+                |> Tuple.mapSecond (Cmd.map config.toMsg)
 
         FinalRelease from ->
             case state.hover of
@@ -111,7 +119,14 @@ update msg (State state) =
                     ( State state, Cmd.none )
 
                 Just to ->
-                    ( makeMove to (State state), Cmd.none )
+                    let
+                        board =
+                            makeMove from to state.board
+                    in
+                    ( State { state | board = board }
+                    , Task.succeed (Chess.Data.Board.toFen board)
+                        |> Task.perform config.onFenChanged
+                    )
 
 
 dragConfig : Drag.Config DraggableItem Msg
@@ -127,102 +142,24 @@ dragConfig =
     }
 
 
-makeMove : Chess.View.Board.Position -> State -> State
-makeMove to (State state) =
-    case state.drag.subject of
-        Nothing ->
-            State state
-
-        Just sub ->
-            let
-                move =
-                    Move
-                        sub.position
-                        to
-                        sub.player
-                        sub.piece
-
-                updatedBoard =
-                    makeMoveOnBoard move state.board
-            in
-            State { state | board = updatedBoard }
-
-
-makeMoveOnBoard : Move -> Board -> Board
-makeMoveOnBoard move board =
+makeMove : DraggableItem -> Position -> Board -> Board
+makeMove from to board =
     board
-        |> removePieceFromBoard move
-        |> addPieceToBoard move
+        |> atPosition Empty from.position
+        |> atPosition (Occupied from.player from.piece) to
 
 
-removePieceFromBoard : Move -> Board -> Board
-removePieceFromBoard { from } board =
-    List.indexedMap
-        (\x row ->
-            List.indexedMap
-                (\y square ->
-                    if toRow x == from.row && toColumn y == from.column then
-                        Empty
-
-                    else
-                        square
-                )
-                row
-        )
-        board
-
-
-addPieceToBoard : Move -> Board -> Board
-addPieceToBoard { to, player, piece } board =
-    List.indexedMap
-        (\x row ->
-            List.indexedMap
-                (\y square ->
-                    if toRow x == to.row && toColumn y == to.column then
-                        Occupied player piece
+atPosition : Square -> Position -> Board -> Board
+atPosition newSquare target =
+    List.indexedMap <|
+        \x ->
+            List.indexedMap <|
+                \y square ->
+                    if target == Chess.Data.Position.fromRowColumn x y then
+                        newSquare
 
                     else
                         square
-                )
-                row
-        )
-        board
-
-
-toRow : Int -> Int
-toRow row =
-    row + 1
-
-
-toColumn : Int -> Char
-toColumn column =
-    case column + 1 of
-        1 ->
-            'a'
-
-        2 ->
-            'b'
-
-        3 ->
-            'c'
-
-        4 ->
-            'd'
-
-        5 ->
-            'e'
-
-        6 ->
-            'f'
-
-        7 ->
-            'g'
-
-        8 ->
-            'h'
-
-        _ ->
-            Debug.crash "Column parsing failure"
 
 
 present : List Animation.Property
@@ -288,7 +225,7 @@ followCursor { x, y } =
         ]
 
 
-viewCell : Drag.State DraggableItem -> Chess.View.Board.Position -> Chess.Data.Board.Square -> Html Msg
+viewCell : Drag.State DraggableItem -> Position -> Chess.Data.Board.Square -> Html Msg
 viewCell drag position square =
     case square of
         Empty ->
@@ -308,7 +245,7 @@ viewCell drag position square =
                 (animateDrag position drag)
 
 
-animateDrag : Chess.View.Board.Position -> Drag.State DraggableItem -> List (Attribute Msg)
+animateDrag : Position -> Drag.State DraggableItem -> List (Attribute Msg)
 animateDrag position drag =
     if Maybe.map .position drag.subject == Just position then
         Animation.render drag.original

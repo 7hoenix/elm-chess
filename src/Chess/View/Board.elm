@@ -1,8 +1,8 @@
-module Chess.View.Board exposing (Position, greenBorder, grid, noBorder, redBorder, square, yellowBorder)
+module Chess.View.Board exposing (greenBorder, grid, noBorder, redBorder, square, yellowBorder)
 
 import AppColor exposing (palette)
-import Char
 import Chess.Data.Board exposing (Square(..))
+import Chess.Data.Position exposing (Position)
 import Chess.View.Asset
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -10,12 +10,6 @@ import Html.Attributes exposing (..)
 
 
 -- GRID
-
-
-type alias Position =
-    { row : Int
-    , column : Char
-    }
 
 
 {-| -}
@@ -47,9 +41,7 @@ viewArea : (Position -> a -> Html msg) -> Int -> Int -> a -> Html msg
 viewArea toArea row column entry =
     let
         position =
-            { row = row + 1
-            , column = Char.fromCode (column + 97)
-            }
+            Chess.Data.Position.fromRowColumn row column
     in
     div
         [ style
@@ -93,7 +85,7 @@ square position square squareAttributes svgAttributes =
 
 tileBackground : Position -> String
 tileBackground position =
-    if position.row % 2 == Char.toCode position.column % 2 then
+    if Chess.Data.Position.alongDiagonal position then
         palette.purple
 
     else

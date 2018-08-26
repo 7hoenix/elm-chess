@@ -1,4 +1,4 @@
-module Chess.Data.Board exposing (Board, Square(..), board)
+module Chess.Data.Board exposing (Board, Square(..), board, toFen)
 
 import Char
 import Chess.Data.Piece exposing (Piece(..))
@@ -54,6 +54,7 @@ parseFenColumn : Char -> Decoder (List Square)
 parseFenColumn c =
     if Char.isDigit c then
         succeed <| List.repeat (parseDigit c) Empty
+
     else
         map List.singleton (piece c)
 
@@ -89,3 +90,94 @@ allPieces =
 parseDigit : Char -> Int
 parseDigit c =
     Char.toCode c - 48
+
+
+
+-- TO FEN
+
+
+toFen : Board -> String
+toFen board =
+    List.map toFenRow board
+        |> String.join "/"
+        |> withFenSuffix
+
+
+{-| TODO: This does not capture en-passent,
+castling, turn, or other niceties of FEN.
+-}
+withFenSuffix : String -> String
+withFenSuffix rows =
+    rows ++ " w 0 1"
+
+
+toFenRow : List Square -> String
+toFenRow =
+    List.foldl toFenRowHelp (Accumulator "" 0) >> collapseEmpties
+
+
+type alias Accumulator =
+    { output : String, empties : Int }
+
+
+toFenRowHelp : Square -> Accumulator -> Accumulator
+toFenRowHelp square accumulator =
+    case square of
+        Empty ->
+            { accumulator | empties = accumulator.empties + 1 }
+
+        Occupied player piece ->
+            { empties = 0
+            , output =
+                collapseEmpties accumulator
+                    ++ occupiedString player piece
+            }
+
+
+collapseEmpties : Accumulator -> String
+collapseEmpties { output, empties } =
+    if empties == 0 then
+        output
+
+    else
+        output ++ toString empties
+
+
+occupiedString : Player.Player -> Piece -> String
+occupiedString player piece =
+    case ( player, piece ) of
+        ( Player.White, Pawn ) ->
+            "P"
+
+        ( Player.White, Rook ) ->
+            "R"
+
+        ( Player.White, Knight ) ->
+            "N"
+
+        ( Player.White, Bishop ) ->
+            "B"
+
+        ( Player.White, Queen ) ->
+            "Q"
+
+        ( Player.White, King ) ->
+            "K"
+
+        ( Player.Black, Pawn ) ->
+            "p"
+
+        ( Player.Black, Rook ) ->
+            "r"
+
+        ( Player.Black, Knight ) ->
+            "n"
+
+        ( Player.Black, Bishop ) ->
+            "b"
+
+        ( Player.Black, Queen ) ->
+            "q"
+
+        ( Player.Black, King ) ->
+            "k"

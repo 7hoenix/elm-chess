@@ -10,35 +10,35 @@ import Mouse
 import Task
 
 
-type alias State a =
-    { subject : Maybe a
+type alias State item =
+    { subject : Maybe item
     , position : Mouse.Position
-    , original : AM.State (Msg a)
-    , cursor : AM.State (Msg a)
+    , original : AM.State (Msg item)
+    , cursor : AM.State (Msg item)
     }
 
 
-type Msg a
-    = Start a Mouse.Position
+type Msg item
+    = Start item Mouse.Position
     | Stop
     | Reset
     | MouseMove Mouse.Position
     | Animate Animation.Msg
 
 
-type alias Config a msg =
-    { toMsg : Msg a -> msg
-    , finalRelease : a -> msg
+type alias Config item msg =
+    { toMsg : Msg item -> msg
+    , finalRelease : item -> msg
 
     -- ANIMATIONS
-    , onCursorStartDrag : List (AM.Step (Msg a))
-    , onCursorStopDrag : List (AM.Step (Msg a))
-    , onOriginalStartDrag : List (AM.Step (Msg a))
-    , onOriginalStopDrag : List (AM.Step (Msg a))
+    , onCursorStartDrag : List (AM.Step (Msg item))
+    , onCursorStopDrag : List (AM.Step (Msg item))
+    , onOriginalStartDrag : List (AM.Step (Msg item))
+    , onOriginalStopDrag : List (AM.Step (Msg item))
     }
 
 
-update : Config a msg -> Msg a -> State a -> ( State a, Cmd msg )
+update : Config item msg -> Msg item -> State item -> ( State item, Cmd msg )
 update config msg state =
     case msg of
         Start subject position ->
@@ -72,18 +72,18 @@ update config msg state =
 
         Animate tick ->
             let
-                ( cursor, a ) =
+                ( cursor, item ) =
                     AM.update tick state.cursor
 
                 ( original, b ) =
                     AM.update tick state.original
             in
             ( { state | original = original, cursor = cursor }
-            , Cmd.map config.toMsg <| Cmd.batch [ a, b ]
+            , Cmd.map config.toMsg <| Cmd.batch [ item, b ]
             )
 
 
-subscriptions : Config a msg -> State a -> Sub msg
+subscriptions : Config item msg -> State item -> Sub msg
 subscriptions { toMsg } state =
     Sub.map toMsg <|
         Sub.batch
@@ -97,7 +97,7 @@ subscriptions { toMsg } state =
             ]
 
 
-draggableAttributes : Config a msg -> a -> List (Attribute msg)
+draggableAttributes : Config item msg -> item -> List (Attribute msg)
 draggableAttributes { toMsg } subject =
     [ draggable "true"
     , onDragStart <| toMsg << Start subject
