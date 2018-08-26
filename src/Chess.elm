@@ -5,6 +5,7 @@ module Chess exposing
     , subscriptions
     , update
     , view
+    , Board, ViewConfig
     )
 
 {-|
@@ -19,7 +20,7 @@ module Chess exposing
 -}
 
 import Animation
-import Chess.Data.Board exposing (Board, Square(..))
+import Chess.Data.Board exposing (Square(..))
 import Chess.Data.Piece exposing (Piece(..))
 import Chess.Data.Player exposing (Player(..))
 import Chess.Data.Position exposing (Position)
@@ -33,6 +34,11 @@ import Json.Decode as D
 import Json.Encode as E
 import Mouse
 import Task
+
+
+{-| -}
+type alias Board =
+    Chess.Data.Board.Board
 
 
 
