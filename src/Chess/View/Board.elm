@@ -62,8 +62,8 @@ viewArea toArea row column entry =
 -- SQUARES
 
 
-square : Position -> Square -> List (Attribute msg) -> Html msg
-square position square extraAttributes =
+square : Position -> Square -> List (Attribute msg) -> List (Attribute msg) -> Html msg
+square position square squareAttributes svgAttributes =
     div
         (style
             [ ( "width", "100%" )
@@ -72,7 +72,7 @@ square position square extraAttributes =
             , ( "justify-content", "center" )
             , ( "background-color", tileBackground position )
             ]
-            :: extraAttributes
+            :: squareAttributes
         )
         [ case square of
             Empty ->
@@ -80,11 +80,12 @@ square position square extraAttributes =
 
             Occupied player piece ->
                 Chess.View.Asset.svg player piece <|
-                    [ style
-                        [ ( "max-width", "100%" )
-                        , ( "max-height", "100%" )
+                    (style
+                        [ ( "max-height", "100%" )
+                        , ( "max-width", "100%" )
                         ]
-                    ]
+                        :: svgAttributes
+                    )
         ]
 
 

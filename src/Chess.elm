@@ -337,19 +337,24 @@ followCursor { x, y } =
 
 viewCell : DragState DraggableItem -> Chess.View.Board.Position -> Chess.Data.Board.Square -> Html Msg
 viewCell drag position square =
-    Chess.View.Board.square position square <|
-        case square of
-            Empty ->
+    case square of
+        Empty ->
+            Chess.View.Board.square position
+                square
                 [ onMouseEnter (SetHover position) ]
+                []
 
-            Occupied player piece ->
-                animateDrag position drag
-                    ++ [ draggable "true"
-                       , onDragStart <|
-                            DragMsg
-                                << Start (DraggableItem position player piece)
-                       , onMouseEnter (SetHover position)
-                       ]
+        Occupied player piece ->
+            Chess.View.Board.square position
+                square
+                [ draggable "true"
+                , onDragStart <|
+                    DragMsg
+                        << Start (DraggableItem position player piece)
+                , onMouseEnter (SetHover position)
+                , Html.Attributes.style [ ( "cursor", "grab" ) ]
+                ]
+                (animateDrag position drag)
 
 
 animateDrag : Chess.View.Board.Position -> DragState DraggableItem -> List (Attribute Msg)
