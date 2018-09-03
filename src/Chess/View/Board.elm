@@ -1,11 +1,29 @@
-module Chess.View.Board exposing (greenBorder, grid, noBorder, redBorder, square, yellowBorder)
+module Chess.View.Board exposing
+    ( greenBorder
+    , grid
+    , noBorder
+    , redBorder
+    , square
+    , yellowBorder
+    )
 
-import AppColor exposing (palette)
+{-|
+
+@docs greenBorder
+@docs grid
+@docs noBorder
+@docs redBorder
+@docs square
+@docs yellowBorder
+
+-}
+
 import Chess.Data.Board exposing (Square(..))
 import Chess.Data.Position exposing (Position)
 import Chess.View.Asset
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Palette
 
 
 
@@ -56,6 +74,7 @@ viewArea toArea row column entry =
 -- SQUARES
 
 
+{-| -}
 square : Position -> Square -> List (Attribute msg) -> List (Attribute msg) -> Html msg
 square position square squareAttributes svgAttributes =
     div
@@ -86,10 +105,10 @@ square position square squareAttributes svgAttributes =
 tileBackground : Position -> String
 tileBackground position =
     if Chess.Data.Position.alongDiagonal position then
-        palette.purple
+        Palette.purple
 
     else
-        palette.gray
+        Palette.gray
 
 
 
@@ -103,6 +122,7 @@ baseBorder =
     ]
 
 
+{-| -}
 noBorder : Attribute msg
 noBorder =
     style <|
@@ -110,26 +130,29 @@ noBorder =
             ++ [ ( "border-color", "transparent" ) ]
 
 
+{-| -}
 greenBorder : Attribute msg
 greenBorder =
     style <|
         baseBorder
             ++ [ ( "cursor", "pointer" )
-               , ( "border-color", palette.aqua )
+               , ( "border-color", Palette.aqua )
                ]
 
 
+{-| -}
 redBorder : Attribute msg
 redBorder =
     style <|
         baseBorder
-            ++ [ ( "border-color", palette.pink ) ]
+            ++ [ ( "border-color", Palette.pink ) ]
 
 
+{-| -}
 yellowBorder : Attribute msg
 yellowBorder =
     style <|
         baseBorder
             ++ [ ( "cursor", "pointer" )
-               , ( "border-color", "yellow" )
+               , ( "border-color", Palette.yellow )
                ]

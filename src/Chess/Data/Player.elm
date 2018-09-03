@@ -1,23 +1,41 @@
-module Chess.Data.Player exposing (Player(..), cpu, player, user)
+module Chess.Data.Player exposing
+    ( Player(..)
+    , user
+    , player
+    , cpu
+    )
+
+{-|
+
+@docs Player
+@docs user
+@docs player
+@docs cpu
+
+-}
 
 import Json.Decode exposing (..)
 
 
+{-| -}
 type Player
     = White
     | Black
 
 
+{-| -}
 user : Player
 user =
     White
 
 
+{-| -}
 cpu : Player
 cpu =
     Black
 
 
+{-| -}
 player : Decoder Player
 player =
     andThen parsePlayer string

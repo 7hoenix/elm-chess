@@ -1,4 +1,18 @@
-module Chess.Data.Board exposing (Board, Square(..), board, toFen)
+module Chess.Data.Board exposing
+    ( Board
+    , Square(..)
+    , board
+    , toFen
+    )
+
+{-|
+
+@docs Board
+@docs Square
+@docs board
+@docs toFen
+
+-}
 
 import Char
 import Chess.Data.Piece exposing (Piece(..))
@@ -7,15 +21,18 @@ import Dict exposing (Dict)
 import Json.Decode exposing (..)
 
 
+{-| -}
 type alias Board =
     List (List Square)
 
 
+{-| -}
 type Square
     = Empty
     | Occupied Player.Player Piece
 
 
+{-| -}
 board : Decoder Board
 board =
     andThen parseFen string
@@ -96,6 +113,7 @@ parseDigit c =
 -- TO FEN
 
 
+{-| -}
 toFen : Board -> String
 toFen board =
     List.map toFenRow board

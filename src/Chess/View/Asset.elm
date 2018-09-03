@@ -1,11 +1,18 @@
 module Chess.View.Asset exposing (svg)
 
+{-|
+
+@docs svg
+
+-}
+
 import Chess.Data.Piece exposing (Piece(..))
 import Chess.Data.Player exposing (Player(..))
 import Html exposing (Attribute, Html, object)
 import Html.Attributes exposing (attribute, style, type_)
 
 
+{-| -}
 svg : Player -> Piece -> List (Attribute msg) -> Html msg
 svg player piece extraAttrs =
     let
