@@ -106,6 +106,7 @@ square position square squareAttributes svgAttributes =
                     (style
                         [ ( "max-height", "100%" )
                         , ( "max-width", "100%" )
+                        , ( "pointer-events", "none" )
                         ]
                         :: svgAttributes
                     )
