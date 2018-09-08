@@ -93,14 +93,14 @@ allPieces =
         , ( 'R', Occupied Player.White Rook )
         , ( 'N', Occupied Player.White Knight )
         , ( 'B', Occupied Player.White Bishop )
-        , ( 'Q', Occupied Player.White Queen )
-        , ( 'K', Occupied Player.White King )
+        , ( 'Q', Occupied Player.White Hand )
+        , ( 'K', Occupied Player.White Monarch )
         , ( 'p', Occupied Player.Black Pawn )
         , ( 'r', Occupied Player.Black Rook )
         , ( 'n', Occupied Player.Black Knight )
         , ( 'b', Occupied Player.Black Bishop )
-        , ( 'q', Occupied Player.Black Queen )
-        , ( 'k', Occupied Player.Black King )
+        , ( 'q', Occupied Player.Black Hand )
+        , ( 'k', Occupied Player.Black Monarch )
         ]
 
 
@@ -176,10 +176,10 @@ occupiedString player piece =
         ( Player.White, Bishop ) ->
             "B"
 
-        ( Player.White, Queen ) ->
+        ( Player.White, Hand ) ->
             "Q"
 
-        ( Player.White, King ) ->
+        ( Player.White, Monarch ) ->
             "K"
 
         ( Player.Black, Pawn ) ->
@@ -194,8 +194,8 @@ occupiedString player piece =
         ( Player.Black, Bishop ) ->
             "b"
 
-        ( Player.Black, Queen ) ->
+        ( Player.Black, Hand ) ->
             "q"
 
-        ( Player.Black, King ) ->
+        ( Player.Black, Monarch ) ->
             "k"

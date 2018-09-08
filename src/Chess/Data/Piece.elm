@@ -13,5 +13,5 @@ type Piece
     | Rook
     | Knight
     | Bishop
-    | Queen
-    | King
+    | Hand
+    | Monarch

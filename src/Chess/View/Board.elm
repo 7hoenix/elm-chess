@@ -102,7 +102,7 @@ square position square squareAttributes svgAttributes =
                 text ""
 
             Occupied player piece ->
-                Chess.View.Asset.svg player piece <|
+                Chess.View.Asset.findSvg player piece <|
                     (style
                         [ ( "max-height", "100%" )
                         , ( "max-width", "100%" )
