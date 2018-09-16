@@ -126,7 +126,7 @@ castling, turn, or other niceties of FEN.
 -}
 withFenSuffix : String -> String
 withFenSuffix rows =
-    rows ++ " w 0 1"
+    rows ++ " w - - 0 1"
 
 
 toFenRow : List Square -> String
