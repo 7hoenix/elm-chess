@@ -28,7 +28,7 @@ type Position
 {-| -}
 alongDiagonal : Position -> Bool
 alongDiagonal (Position row column) =
-    row % 2 == Char.toCode column % 2
+    modBy 2 row == modBy 2 (Char.toCode column)
 
 
 {-| -}

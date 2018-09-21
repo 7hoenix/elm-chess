@@ -5,7 +5,7 @@ module Chess.View.Board exposing
     , grid
     , noBorder
     , redBorder
-    , square
+    , viewSquare
     , yellowBorder
     , blueBorder
     )
@@ -18,7 +18,7 @@ module Chess.View.Board exposing
 @docs grid
 @docs noBorder
 @docs redBorder
-@docs square
+@docs viewSquare
 @docs yellowBorder
 @docs blueBorder
 
@@ -50,7 +50,7 @@ grid viewConfig toArea entries =
     let
         axisSize =
             "repeat("
-                ++ toString (List.length entries)
+                ++ String.fromInt (List.length entries)
                 ++ ","
                 ++ viewConfig.each
                 ++ ")"
@@ -59,13 +59,11 @@ grid viewConfig toArea entries =
         |> List.indexedMap (List.indexedMap << viewArea toArea)
         |> List.concat
         |> div
-            [ style
-                [ ( "display", "grid" )
-                , ( "justify-content", "center" )
-                , ( "grid-gap", viewConfig.between )
-                , ( "grid-template-rows", axisSize )
-                , ( "grid-template-columns", axisSize )
-                ]
+            [ style "display" "grid"
+            , style "justify-content" "center"
+            , style "grid-gap" viewConfig.between
+            , style "grid-template-rows" axisSize
+            , style "grid-template-columns" axisSize
             ]
 
 
@@ -76,10 +74,8 @@ viewArea toArea row column entry =
             Chess.Data.Position.fromRowColumn row column
     in
     div
-        [ style
-            [ ( "grid-row", toString (row + 1) )
-            , ( "grid-column", toString (column + 1) )
-            ]
+        [ style "grid-row" (String.fromInt (row + 1))
+        , style "grid-column" (String.fromInt (column + 1))
         ]
         [ toArea position entry ]
 
@@ -89,17 +85,16 @@ viewArea toArea row column entry =
 
 
 {-| -}
-square : Position -> Square -> List (Attribute msg) -> List (Attribute msg) -> Html msg
-square position square squareAttributes svgAttributes =
+viewSquare : Position -> Square -> List (Attribute msg) -> List (Attribute msg) -> Html msg
+viewSquare position square squareAttributes svgAttributes =
     div
-        (style
-            [ ( "width", "100%" )
-            , ( "height", "100%" )
-            , ( "display", "flex" )
-            , ( "justify-content", "center" )
-            , ( "background-color", tileBackground position )
-            ]
-            :: squareAttributes
+        ([ style "width" "100%"
+         , style "height" "100%"
+         , style "display" "flex"
+         , style "justify-content" "center"
+         , style "background-color" (tileBackground position)
+         ]
+            ++ squareAttributes
         )
         [ case square of
             Empty ->
@@ -107,12 +102,11 @@ square position square squareAttributes svgAttributes =
 
             Occupied player piece ->
                 Chess.View.Asset.findSvg player piece <|
-                    (style
-                        [ ( "max-height", "100%" )
-                        , ( "max-width", "100%" )
-                        , ( "pointer-events", "none" )
-                        ]
-                        :: svgAttributes
+                    ([ style "max-height" "100%"
+                     , style "max-width" "100%"
+                     , style "pointer-events" "none"
+                     ]
+                        ++ svgAttributes
                     )
         ]
 
@@ -130,64 +124,58 @@ tileBackground position =
 -- BORDERS
 
 
-baseBorder : Config -> List ( String, String )
+baseBorder : Config -> List (Attribute msg)
 baseBorder config =
-    [ ( "border-width", config.borderSize )
-    , ( "border-style", "solid" )
+    [ style "border-width" config.borderSize
+    , style "border-style" "solid"
     ]
 
 
 {-| -}
-noBorder : Config -> Attribute msg
+noBorder : Config -> List (Attribute msg)
 noBorder config =
-    style <|
-        baseBorder config
-            ++ [ ( "border-color", "transparent" ) ]
+    baseBorder config
+        ++ [ style "border-color" "transparent" ]
 
 
 {-| -}
-greenBorder : Config -> Attribute msg
+greenBorder : Config -> List (Attribute msg)
 greenBorder config =
-    style <|
-        baseBorder config
-            ++ [ ( "cursor", "pointer" )
-               , ( "border-color", Palette.aqua )
-               ]
+    baseBorder config
+        ++ [ style "cursor" "pointer"
+           , style "border-color" Palette.aqua
+           ]
 
 
 {-| -}
-lightGreenBorder : Config -> Attribute msg
+lightGreenBorder : Config -> List (Attribute msg)
 lightGreenBorder config =
-    style <|
-        baseBorder config
-            ++ [ ( "cursor", "pointer" )
-               , ( "border-color", Palette.lightGreen )
-               ]
+    baseBorder config
+        ++ [ style "cursor" "pointer"
+           , style "border-color" Palette.lightGreen
+           ]
 
 
 {-| -}
-redBorder : Config -> Attribute msg
+redBorder : Config -> List (Attribute msg)
 redBorder config =
-    style <|
-        baseBorder config
-            ++ [ ( "border-color", Palette.pink ) ]
+    baseBorder config
+        ++ [ style "border-color" Palette.pink ]
 
 
 {-| -}
-yellowBorder : Config -> Attribute msg
+yellowBorder : Config -> List (Attribute msg)
 yellowBorder config =
-    style <|
-        baseBorder config
-            ++ [ ( "cursor", "pointer" )
-               , ( "border-color", Palette.yellow )
-               ]
+    baseBorder config
+        ++ [ style "cursor" "pointer"
+           , style "border-color" Palette.yellow
+           ]
 
 
 {-| -}
-blueBorder : Config -> Attribute msg
+blueBorder : Config -> List (Attribute msg)
 blueBorder config =
-    style <|
-        baseBorder config
-            ++ [ ( "cursor", "pointer" )
-               , ( "border-color", Palette.blue )
-               ]
+    baseBorder config
+        ++ [ style "cursor" "pointer"
+           , style "border-color" Palette.blue
+           ]
