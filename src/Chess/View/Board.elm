@@ -1,6 +1,7 @@
 module Chess.View.Board exposing
     ( Config
     , greenBorder
+    , lightGreenBorder
     , grid
     , noBorder
     , redBorder
@@ -12,6 +13,7 @@ module Chess.View.Board exposing
 
 @docs Config
 @docs greenBorder
+@docs lightGreenBorder
 @docs grid
 @docs noBorder
 @docs redBorder
@@ -148,6 +150,16 @@ greenBorder config =
         baseBorder config
             ++ [ ( "cursor", "pointer" )
                , ( "border-color", Palette.aqua )
+               ]
+
+
+{-| -}
+lightGreenBorder : Config -> Attribute msg
+lightGreenBorder config =
+    style <|
+        baseBorder config
+            ++ [ ( "cursor", "pointer" )
+               , ( "border-color", Palette.lightGreen )
                ]
 
 

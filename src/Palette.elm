@@ -1,4 +1,4 @@
-module Palette exposing (aqua, gray, green, pink, purple, red, yellow)
+module Palette exposing (aqua, gray, green, lightGreen, pink, purple, red, yellow)
 
 
 gray : String
@@ -24,6 +24,11 @@ purple =
 green : String
 green =
     "#497584"
+
+
+lightGreen : String
+lightGreen =
+    "#81FFFF"
 
 
 aqua : String
