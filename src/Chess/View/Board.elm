@@ -7,6 +7,7 @@ module Chess.View.Board exposing
     , redBorder
     , square
     , yellowBorder
+    , blueBorder
     )
 
 {-|
@@ -19,6 +20,7 @@ module Chess.View.Board exposing
 @docs redBorder
 @docs square
 @docs yellowBorder
+@docs blueBorder
 
 -}
 
@@ -178,4 +180,14 @@ yellowBorder config =
         baseBorder config
             ++ [ ( "cursor", "pointer" )
                , ( "border-color", Palette.yellow )
+               ]
+
+
+{-| -}
+blueBorder : Config -> Attribute msg
+blueBorder config =
+    style <|
+        baseBorder config
+            ++ [ ( "cursor", "pointer" )
+               , ( "border-color", Palette.blue )
                ]
