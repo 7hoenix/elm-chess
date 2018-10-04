@@ -114,19 +114,30 @@ parseDigit c =
 
 
 {-| -}
-toFen : Board -> String
-toFen board =
+toFen : Board -> Player.Player -> String
+toFen board team =
     List.map toFenRow board
         |> String.join "/"
+        |> withTeam team
         |> withFenSuffix
 
 
+withTeam : Player.Player -> String -> String
+withTeam team partialFen =
+    case team of
+        Player.White ->
+            partialFen ++ " w"
+
+        Player.Black ->
+            partialFen ++ " b"
+
+
 {-| TODO: This does not capture en-passent,
-castling, turn, or other niceties of FEN.
+castling, or other niceties of FEN.
 -}
 withFenSuffix : String -> String
-withFenSuffix rows =
-    rows ++ " w - - 0 1"
+withFenSuffix partialFen =
+    partialFen ++ " - - 0 1"
 
 
 toFenRow : List Square -> String
