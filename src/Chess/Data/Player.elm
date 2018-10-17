@@ -1,16 +1,12 @@
 module Chess.Data.Player exposing
     ( Player(..)
-    , user
     , player
-    , cpu
     )
 
 {-|
 
 @docs Player
-@docs user
 @docs player
-@docs cpu
 
 -}
 
@@ -24,18 +20,6 @@ type Player
 
 
 {-| -}
-user : Player
-user =
-    White
-
-
-{-| -}
-cpu : Player
-cpu =
-    Black
-
-
-{-| -}
 player : Decoder Player
 player =
     andThen parsePlayer string
@@ -44,11 +28,11 @@ player =
 parsePlayer : String -> Decoder Player
 parsePlayer raw =
     case raw of
-        "CPU" ->
-            succeed cpu
+        "BLACK" ->
+            succeed Black
 
-        "USER" ->
-            succeed user
+        "WHITE" ->
+            succeed White
 
         invalid ->
             fail <| "`" ++ invalid ++ "` is not a valid player"

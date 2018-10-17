@@ -1,7 +1,7 @@
 module Chess.Data.Board exposing
     ( Board
     , Square(..)
-    , board
+    , boardDecoder
     , toFen
     )
 
@@ -9,7 +9,7 @@ module Chess.Data.Board exposing
 
 @docs Board
 @docs Square
-@docs board
+@docs boardDecoder
 @docs toFen
 
 -}
@@ -33,8 +33,8 @@ type Square
 
 
 {-| -}
-board : Decoder Board
-board =
+boardDecoder : Decoder Board
+boardDecoder =
     andThen parseFen string
 
 
@@ -73,14 +73,14 @@ parseFenColumn c =
         succeed <| List.repeat (parseDigit c) Empty
 
     else
-        map List.singleton (piece c)
+        map List.singleton (pieceDecoder c)
 
 
-piece : Char -> Decoder Square
-piece c =
-    case Dict.get c allPieces of
-        Just c ->
-            succeed c
+pieceDecoder : Char -> Decoder Square
+pieceDecoder pieceKey =
+    case Dict.get pieceKey allPieces of
+        Just piece ->
+            succeed piece
 
         Nothing ->
             fail "not a FEN-encoded piece"
@@ -114,19 +114,30 @@ parseDigit c =
 
 
 {-| -}
-toFen : Board -> String
-toFen board =
+toFen : Board -> Player.Player -> String
+toFen board team =
     List.map toFenRow board
         |> String.join "/"
+        |> withTeam team
         |> withFenSuffix
 
 
+withTeam : Player.Player -> String -> String
+withTeam team partialFen =
+    case team of
+        Player.White ->
+            partialFen ++ " w"
+
+        Player.Black ->
+            partialFen ++ " b"
+
+
 {-| TODO: This does not capture en-passent,
-castling, turn, or other niceties of FEN.
+castling, or other niceties of FEN.
 -}
 withFenSuffix : String -> String
-withFenSuffix rows =
-    rows ++ " w - - 0 1"
+withFenSuffix partialFen =
+    partialFen ++ " - - 0 1"
 
 
 toFenRow : List Square -> String
@@ -158,7 +169,7 @@ collapseEmpties { output, empties } =
         output
 
     else
-        output ++ toString empties
+        output ++ String.fromInt empties
 
 
 occupiedString : Player.Player -> Piece -> String

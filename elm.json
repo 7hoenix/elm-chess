@@ -1,0 +1,23 @@
+{
+    "type": "package",
+    "name": "7hoenix/elm-chess",
+    "summary": "Basic Chess module in Elm",
+    "license": "BSD-3-Clause",
+    "version": "1.0.0",
+    "exposed-modules": [
+        "Chess.Data.Board",
+        "Chess.Data.Piece",
+        "Chess.Data.Player",
+        "Chess.Data.Position",
+        "Chess.View.Asset",
+        "Chess.View.Board"
+    ],
+    "elm-version": "0.19.0 <= v < 0.20.0",
+    "dependencies": {
+        "elm/core": "1.0.0 <= v < 2.0.0",
+        "elm/html": "1.0.0 <= v < 2.0.0",
+        "elm/json": "1.0.0 <= v < 2.0.0",
+        "elm/svg": "1.0.1 <= v < 2.0.0"
+    },
+    "test-dependencies": {}
+}
